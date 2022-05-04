@@ -1,14 +1,15 @@
 body{
     font-family: "Poppins", sans-serif;
-}
-.container{
-    width: 50%;
     display: flex;
     flex-direction: column;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    align-items: center;
+    justify-content: center;
+}
+.container{
+    width: 70%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
 }
 
 form{
@@ -37,13 +38,42 @@ form input[type="submit"]{
     color: #0d6efd;
     cursor: pointer;
 }
-h1{
+#title{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 3rem;
+}
+#title h1{
+    flex-grow: 1;
+    color: rgb(201, 209, 229);
+    font-size: 2.5em;
     text-align: center;
     margin: 0;
-    position: absolute;
-    top: 0px;
     width: 100%;
-    margin-top: 3rem;
+    position: relative;
+    text-shadow:
+                0.4px 0.4px 2px rgb(41, 55, 71),
+                2.0px 2.0px rgb(41, 55, 71),
+                1.6px 1.6px rgb(41, 55, 71),
+                1.2px 1.2px rgb(41, 55, 71),
+                0.8px 0.8px rgb(41, 55, 71),
+                0.4px 0.4px rgb(41, 55, 71);
+    font-weight: bold;
+}
+#title span{
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    font-size: 18px;
+    border-radius: 50%;
+    background-color: darkslategray;
+    color: white;
+    padding: 2px;
+    right: 20px;
+    text-align: center;
 }
 h2{
     text-align: center;
@@ -62,4 +92,35 @@ h2{
 }
 .alertclosebutton{
     cursor: pointer;
+}
+#details{
+    width: 200px;
+    background-color: darkslategray;
+    border-radius: 10px;
+    color: white;
+    padding: 10px;
+    position: absolute;
+    right: 20px;
+    transform: scale(0);
+    transition: 200ms;
+    z-index: 101;
+}
+#details.active{
+    transform: scale(1);
+}
+#overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    opacity: 0;
+    transition: 200ms;
+    pointer-events: none;
+}
+#overlay.active{
+    opacity: 1;
+    pointer-events: all;
 }
