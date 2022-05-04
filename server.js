@@ -14,8 +14,6 @@ const path = require('path');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.get()
-
 app.get("/announceStatus", (req, res) => {
     const contacts = req.body.contacts
     contacts.forEach(contact => {
@@ -115,9 +113,12 @@ const io = require("socket.io")(server, {
 io.on('connection', (socket) => {
     let pending = JSON.parse(fs.readFileSync("pending.json"))
     const id = socket.handshake.query.id
-    socket.join(id)
     users = JSON.parse(fs.readFileSync("users.json"))
-    if(!(id in users)) return;
+    socket.join(id)
+    if(!(id in users)) {
+        socket.emit('error', {type: "relogin", text: "Oops. Login/Signup again"})
+        return;
+    }
     users[id].status = "online"
     fs.writeFileSync('users.json', JSON.stringify(users, null, 2))
     io.emit('onlineStatus', {id, online: true})
@@ -170,6 +171,7 @@ io.on('connection', (socket) => {
     })
     socket.on('disconnect', (reason) => {
         users = JSON.parse(fs.readFileSync("users.json"))
+        console.log(id)
         users[id].status = new Date()
         io.emit('onlineStatus', {id, online: false})
         fs.writeFileSync("users.json", JSON.stringify(users, null, 2))

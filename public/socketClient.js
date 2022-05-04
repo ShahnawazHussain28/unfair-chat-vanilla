@@ -7,6 +7,7 @@ if (!idKey) {
 }
 
 const socket = io('/', { query: { id } });
+console.log(socket)
 
 socket.on('connect', () => {
     document.querySelector("#myid").innerHTML = "Your ID: " + id;
@@ -18,6 +19,13 @@ socket.on('receive-message', ({ sender, text, time }) => {
     newMessage(sender, newMsg);
     if (sender == activeChatId) {
         bluetickEmit();
+    }
+})
+socket.on('error', ({type, text}) => {
+    if(type == "relogin") {
+        localStorage.removeItem(PREFIX_KEY+"id")
+        localStorage.removeItem(PREFIX_KEY+"conversations")
+        window.location.href = "/"
     }
 })
 socket.on('blue-tick-update', ({ sender }) => {

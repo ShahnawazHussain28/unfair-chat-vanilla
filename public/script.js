@@ -1,6 +1,6 @@
 let activeChatId = ''
-let myId = '7439558390'
 const PREFIX_KEY = "unfair-chat-"
+let myId = localStorage.getItem(PREFIX_KEY+"id")
 const conversationKey = PREFIX_KEY + "conversations"
 const createContactForm = document.querySelector("#createcontactform")
 let conversations = JSON.parse(localStorage.getItem(conversationKey))
@@ -9,8 +9,6 @@ let openConversation = document.querySelector("#openconversation")
 let msg = document.querySelector('#msg')
 
 const chatboxForm = document.querySelector("#chatbox")
-
-if (!localStorage.getItem(PREFIX_KEY + "id")) window.location.href = "/login";
 
 reRenderConversationsList();
 openConversation.style.display = "none";
@@ -161,8 +159,8 @@ function updateBlueTick(sender) {
 }
 
 function reRenderConversationsList() {
-    if (!conversations) return;
     document.querySelector("#mydp").innerHTML = localStorage.getItem(PREFIX_KEY+"dp") || '😒';
+    if (!conversations) return;
     const parent = document.querySelector("#conversations");
     parent.innerHTML = "";
     conversations.forEach(conversation => {
