@@ -1,0 +1,179 @@
+const express = require("express")
+const bcrypt = require("bcrypt")
+const app = express()
+const server = app.listen(process.env.PORT || 5000)
+const cors = require("cors")
+app.use(cors({ origin: "*" }))
+app.use(express.json())
+const fs = require("fs")
+
+let data = fs.readFileSync("users.json")
+let users = JSON.parse(data)
+
+const path = require('path');
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// app.get()
+
+app.get("/announceStatus", (req, res) => {
+    const contacts = req.body.contacts
+    contacts.forEach(contact => {
+        mySocket.broadcast.to(contact).emit('someoneOnline', {id: id})          
+    })
+    res.send({message: "working"})
+})
+
+app.post("/register", async (req, res) => {
+    const number = req.body.id;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    users = JSON.parse(fs.readFileSync("users.json"))
+    if (number in users) return res.send({ message: "this number already exist", granted: false })
+    if (password !== confirmPassword) return res.send({ message: "Passwords do not match", granted: false })
+    else {
+        try {
+            const hashedPassword = await bcrypt.hash(password, 5)
+            users[number] = { password: hashedPassword , dp: '😒'}
+            fs.writeFile("users.json", JSON.stringify(users, null, 2), () => {
+                return res.send({ message: "Successsfully registered your account", granted: true })
+            })
+        }
+        catch {
+            return res.send({ message: "Internal Error. Try Again", granted: false })
+        }
+    }
+    return res.status(404)
+})
+
+app.post("/login", async (req, res) => {
+    const number = req.body.id;
+    const password = req.body.password;
+    users = JSON.parse(fs.readFileSync("users.json"))
+    if (!(number in users)) return res.send({ message: "This Number is not Registered. Please Sign Up.", granted: false })
+    try {
+        if (number in users && await bcrypt.compare(password, users[number].password)) {
+            return res.send({ message: "You are Logged In", dp: users[number].dp, granted: true })
+        } else {
+            return res.send({ message: "Access Denied", granted: false })
+        }
+    } catch {
+        return res.send({ message: "Internal Error. Try Again", granted: false })
+    }
+})
+app.get("/onlineStatus/:id", (req, res) => {
+    const id = req.params.id
+    users = JSON.parse(fs.readFileSync("users.json"))
+    if (id in users) {
+        return res.send({status: users[id].status})
+    }
+    return res.send({})
+})
+app.get("/getdp/:id", (req, res) => {
+    const id = req.params.id
+    users = JSON.parse(fs.readFileSync("users.json"))
+    if (id in users) {
+        return res.send({dp: users[id].dp})
+    } else {
+        return res.send({dp: '❌'})
+    }
+    return res.send({dp: '😒'})
+})
+app.post("/setdp", (req, res) => {
+    const id = req.body.id;
+    let dp = req.body.dp;
+    if(dp.length > 1) dp = dp[0];
+    if(id in users){
+        if(users[id].dp = req.body.dp){
+            fs.writeFileSync('users.json', JSON.stringify(users, null, 2))
+            return res.send({success: true, message: 'DP Changed'})
+        }
+    }
+    return res.send({success: false, message: 'Something went wrong'})
+})
+app.post("/deleteAccount", (req, res) => {
+    const id = req.body.id;
+    if (id in users) {
+        if (delete users[id]){
+            fs.writeFileSync('users.json', JSON.stringify(users, null, 2))
+            return res.send({success: true, message: 'Account Deleted'})
+        } else {
+            return res.send({success: false, message: 'Could not Delete'})
+        }
+    } else {
+        return res.send({success: false, message: 'Could not find ID'})
+    }
+})
+
+
+const io = require("socket.io")(server, {
+    cors: {
+        origin: "*"
+    }
+})
+
+io.on('connection', (socket) => {
+    let pending = JSON.parse(fs.readFileSync("pending.json"))
+    const id = socket.handshake.query.id
+    socket.join(id)
+    users = JSON.parse(fs.readFileSync("users.json"))
+    users[id].status = "online"
+    fs.writeFileSync('users.json', JSON.stringify(users, null, 2))
+    io.emit('onlineStatus', {id, online: true})
+    if (id in pending){
+        setTimeout(() => {
+            pending[id].messages.forEach((message) => {
+                socket.emit('receive-message', message)
+            })
+            pending[id].seen.forEach((seenIds) => {
+                socket.emit('blue-tick-update', {sender: seenIds})
+            })
+            pending[id].messages = []
+            pending[id].seen = []
+            fs.writeFileSync("pending.json", JSON.stringify(pending, null, 2))
+        }, 1000)
+    }
+    socket.on('typing', ({recipient, text}) => {
+        socket.broadcast.to(recipient).emit('receive-typing', {
+            sender: id, text
+        })
+    })
+    socket.on('stop-typing', ({recipient}) => {
+        socket.broadcast.to(recipient).emit('receive-stop-typing', {
+            sender: id
+        })
+    })
+    socket.on('send-message', ({ recipient, text, time }) => {
+        if (!io.sockets.adapter.rooms.get(recipient)){
+            pending = JSON.parse(fs.readFileSync("pending.json"))
+            if (!(recipient in pending)) pending[recipient] = {messages:[], seen:[]}
+            pending[recipient].messages.push({sender: id, text, time})
+            fs.writeFileSync("pending.json", JSON.stringify(pending, null, 2))
+        }
+        socket.broadcast.to(recipient).emit('receive-message', {
+            sender: id, text, time
+        })
+    })
+    socket.on('blue-tick', ({recipient, sender}) => {
+        if (!io.sockets.adapter.rooms.get(recipient)){
+            pending = JSON.parse(fs.readFileSync("pending.json"))
+            if (!(recipient in pending)) pending[recipient] = {messages:[], seen:[]}
+            if (!pending[recipient].seen.find((s) => s === sender)){
+                pending[recipient].seen.push(sender)
+            }
+            fs.writeFileSync("pending.json", JSON.stringify(pending, null, 2))
+        }
+        socket.broadcast.to(recipient).emit('blue-tick-update', {
+            sender
+        })
+    })
+    socket.on('disconnect', (reason) => {
+        users = JSON.parse(fs.readFileSync("users.json"))
+        users[id].status = new Date()
+        io.emit('onlineStatus', {id, online: false})
+        fs.writeFileSync("users.json", JSON.stringify(users, null, 2))
+    })
+    
+    
+})
+

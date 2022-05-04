@@ -1,0 +1,21 @@
+{
+  "name": "unfair-chat",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "devStart": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "Shahnawaz Hussain",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "express": "^4.17.3",
+    "socket.io": "^4.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "description": "A simple secure chatting application with some extraordinary functionalities"
+}
