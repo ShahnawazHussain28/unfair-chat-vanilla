@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unfair Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="modal.css">
+    <script src="https://unpkg.com/socket.io-client@4.4.1/dist/socket.io.min.js"></script>
+    <script src="socketClient.js"></script>
+    <script src="settings.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <div id="homeheader">
+                <div class="appname">Unfair Chat</div>
+                <div id="homeoptions" data-modal-target="#homeoptionscontainer">•••</div>
+                <button id="fullscreen"><i class="fa fa-expand"></i></button>
+            </div>
+            <div id="conversations">
+                <!-- <div class="conversation" data-chat-id="9239340845">
+                    <p class="name">Name1</p>
+                    <span class="unread"></span>
+                </div> -->
+            </div>
+            <div id="footer">
+                <p id="myid">Your Id: </p>
+                <button id="createconversation" data-modal-target="#newconversationform">New Conversation</button>
+            </div>
+        </div>
+        <div id="openconversation">
+            <div id="header">
+                <button id="backbutton" onclick="deselectConversation()">&LeftArrow;</button>
+                <div id="pic"></div>
+                <div id="namestatus" onclick="displayDetailsModal()">
+                    <p id="name">Name1</p>
+                    <p id="status">12:04 PM</p>
+                </div>
+                <button id="options" data-modal-target="#optionscontainer">•••</button>
+            </div>
+            <div id="chat">
+            </div>
+            <form id="chatbox">
+                <textarea type="text" id="msg"></textarea>
+                <button type="submit" id="sendbutton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M15.379,19.1403 L12.108,12.5993 L19.467,5.2413 L15.379,19.1403 Z M4.86,8.6213 L18.76,4.5343 L11.401,11.8923 L4.86,8.6213 Z M3.359,8.0213 C2.923,8.1493 2.87,8.7443 3.276,8.9483 L11.128,12.8733 L15.053,20.7243 C15.256,21.1303 15.852,21.0773 15.98,20.6413 L20.98,3.6413 C21.091,3.2623 20.739,2.9093 20.359,3.0213 L3.359,8.0213 Z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        <div id="optionscontainer" class="modal">
+            <div class="modalheader">
+                <p class="modalheadertext">Options</p>
+                <button data-close-button>&times;</button>
+            </div>
+            <div class="modalbody">
+                <button class="chatoption" data-modal-target="#savecontactform">Save/Change Name</button>
+                <button class="chatoption" onclick="clearChat()">Clear Chat</button>
+                <button class="chatoption" onclick="deleteContact()">Delete Contact</button>
+            </div>
+        </div>
+        <div id="newconversationform" class="modal">
+            <div class="modalheader">
+                <p class="modalheadertext">Create New Conversation</p>
+                <button data-close-button>&times;</button>
+            </div>
+            <div class="modalbody">
+                <form id="createcontactform">
+                    <label for="id">Mobile Number</label>
+                    <input type="number" name="id" id="createId" maxlength="10"> <br>
+                    <label for="name">Name</label>
+                    <input type="text" name="name" id="createName" maxlength="20">
+                    <input type="submit" value="Create" data-close-button>
+                </form>
+            </div>
+        </div>
+        <div id="savecontactform" class="modal">
+            <div class="modalheader">
+                <p class="modalheadertext" id="headerNumber">Number: </p>
+            </div>
+            <div class="modalbody">
+                <form id="saveContact">
+                    <label for="name">Name: </label>
+                    <input type="text" name="name" id="saveName" maxlength="20">
+                    <input type="submit" value="Save" data-close-button>
+                </form>
+            </div>
+        </div>
+        <div id="homeoptionscontainer" class="modal">
+            <div class="modalheader">
+                <p class="modalheadertext">Options</p>
+                <button data-close-button>&times;</button>
+            </div>
+            <div class="modalbody">
+                <div id="mydp">😁</div>
+                <button class="chatoption" onclick="chooseDP()">Change DP</button>
+                <button class="chatoption" onclick="logOut()">Log Out</button>
+                <button class="chatoption" onclick="deleteAccount()">Delete Account</button>
+            </div>
+        </div>
+        <div id="contactdetails" class="modal">
+            <div class="modalheader">
+                <p class="modalheadertext">Details</p>
+                <button data-close-button>&times;</button>
+            </div>
+            <div class="modalbody">
+                <div id="detailsdp">😁</div>
+                <div id="detailsname">Shahnawaz Hussain</div>
+                <div id="detailsnumber">7439558390</div>
+                <div id="detailstotalmessage">Total Messages: 96</div>
+            </div>
+        </div>
+        <div id="choosedp" class="modal">
+            <div class="modalheader">
+                <p class="modalheadertext">Choose DP</p>
+            </div>
+            <div class="modalbody" style="max-height: 60vh;">
+                <section>
+                    <div class="emoji">😁</div>
+                    <div class="emoji">😃</div>
+                    <div class="emoji">😄</div>
+                    <div class="emoji">😆</div>
+                    <div class="emoji">😅</div>
+                    <div class="emoji">🤣</div>
+                    <div class="emoji">😂</div>
+                    <div class="emoji">🙂</div>
+                    <div class="emoji">😉</div>
+                    <div class="emoji">😊</div>
+                    <div class="emoji">😇</div>
+                    <div class="emoji">🥰</div>
+                    <div class="emoji">😍</div>
+                    <div class="emoji">🤩</div>
+                    <div class="emoji">😘</div>
+                    <div class="emoji">😚</div>
+                    <div class="emoji">😋</div>
+                    <div class="emoji">😜</div>
+                    <div class="emoji">🤪</div>
+                    <div class="emoji">😝</div>
+                    <div class="emoji">🤑</div>
+                    <div class="emoji">🤗</div>
+                    <div class="emoji">🌚</div>
+                    <div class="emoji">🤫</div>
+                    <div class="emoji">🤔</div>
+                    <div class="emoji">🤨</div>
+                    <div class="emoji">😶</div>
+                    <div class="emoji">😐</div>
+                    <div class="emoji">😑</div>
+                    <div class="emoji">🙄</div>
+                    <div class="emoji">🤒</div>
+                    <div class="emoji">😷</div>
+                    <div class="emoji">😴</div>
+                    <div class="emoji">🤤</div>
+                    <div class="emoji">😵‍💫</div>
+                    <div class="emoji">😎</div>
+                    <div class="emoji">☹️</div>
+                    <div class="emoji">😮</div>
+                    <div class="emoji">😳</div>
+                    <div class="emoji">🥺</div>
+                    <div class="emoji">😭</div>
+                    <div class="emoji">😱</div>
+                    <div class="emoji">😖</div>
+                    <div class="emoji">😓</div>
+                    <div class="emoji">😡</div>
+                    <div class="emoji">🥱</div>
+                    <div class="emoji">💀</div>
+                    <div class="emoji">🤡</div>
+                    <div class="emoji">💩</div>
+                    <div class="emoji">👻</div>
+                    <div class="emoji">🤖</div>
+                    <div class="emoji">😸</div>
+                    <div class="emoji">💋</div>
+                    <div class="emoji">💪</div>
+                    <div class="emoji">🧠</div>
+                    <div class="emoji">👀</div>
+                    <div class="emoji">👶</div>
+                    <div class="emoji">👦</div>
+                    <div class="emoji">👧</div>
+                    <div class="emoji">👱‍♀️</div>
+                    <div class="emoji">🧑‍🦲</div>
+                    <div class="emoji">👩‍🦲</div>
+                    <div class="emoji">👩‍❤️‍💋‍👨</div>
+                </section>
+                <section>
+                    <div class="emoji">🙈</div>
+                    <div class="emoji">🙉</div>
+                    <div class="emoji">🙊</div>
+                    <div class="emoji">🐵</div>
+                    <div class="emoji">🐶</div>
+                    <div class="emoji">🐺</div>
+                    <div class="emoji">🦝</div>
+                    <div class="emoji">🦁</div>
+                    <div class="emoji">🐯</div>
+                    <div class="emoji">🐴</div>
+                    <div class="emoji">🦄</div>
+                    <div class="emoji">🐮</div>
+                    <div class="emoji">🐷</div>
+                    <div class="emoji">🐽</div>
+                    <div class="emoji">🐭</div>
+                    <div class="emoji">🐰</div>
+                    <div class="emoji">🐲</div>
+                    <div class="emoji">🦆</div>
+                </section>
+            </div>
+        </div>
+        <div id="overlay"></div>
+    </div>
+    <script src="modals.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
