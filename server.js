@@ -117,6 +117,7 @@ io.on('connection', (socket) => {
     const id = socket.handshake.query.id
     socket.join(id)
     users = JSON.parse(fs.readFileSync("users.json"))
+    if(!(id in users)) return;
     users[id].status = "online"
     fs.writeFileSync('users.json', JSON.stringify(users, null, 2))
     io.emit('onlineStatus', {id, online: true})
