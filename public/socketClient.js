@@ -7,15 +7,12 @@ if (!idKey) {
 }
 
 const socket = io('/', { query: { id } });
-console.log(socket)
 
 socket.on('connect', () => {
     document.querySelector("#myid").innerHTML = "Your ID: " + id;
-    console.log("Connected");
 })
 socket.on('receive-message', ({ sender, text, time }) => {
     let newMsg = { text: text, time: time, seen: false, fromMe: false };
-    console.log(sender, text, time);
     newMessage(sender, newMsg);
     if (sender == activeChatId) {
         bluetickEmit();

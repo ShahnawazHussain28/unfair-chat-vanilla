@@ -171,7 +171,6 @@ io.on('connection', (socket) => {
     })
     socket.on('disconnect', (reason) => {
         users = JSON.parse(fs.readFileSync("users.json"))
-        console.log(id)
         users[id].status = new Date()
         io.emit('onlineStatus', {id, online: false})
         fs.writeFileSync("users.json", JSON.stringify(users, null, 2))
