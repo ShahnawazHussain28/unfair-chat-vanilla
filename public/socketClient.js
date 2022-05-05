@@ -21,7 +21,9 @@ socket.on('receive-message', ({ sender, text, time }) => {
 socket.on('error', ({type, text}) => {
     if(type == "relogin") {
         localStorage.removeItem(PREFIX_KEY+"id")
+        localStorage.removeItem(PREFIX_KEY+"dp")
         localStorage.removeItem(PREFIX_KEY+"conversations")
+        activeChatId = ''
         window.location.href = "/"
     }
 })
@@ -60,5 +62,11 @@ function bluetickEmit() {
     socket.emit('blue-tick', {
         recipient: activeChatId,
         sender: id
+    })
+}
+function talkingToEmit(id, name){
+    socket.emit('set-talking-to', {
+        talkingId: id,
+        talkingName: name 
     })
 }

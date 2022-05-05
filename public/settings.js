@@ -1,11 +1,18 @@
-function displayDetailsModal(){
+function displayDetailsModal(dp, talkingToId, talkingToName){
     if(!activeChatId) return;
     for (let i = 0; i < conversations.length; i++) {
         const conversation = conversations[i];
         if(conversation.id == activeChatId) {
+            if (talkingToId == myId) {
+                talkingToName = "You"
+                talkingToId = ''
+            }
+            document.querySelector("#detailsdp").innerHTML = dp
             document.querySelector("#detailsname").innerHTML = conversation.name || '';
             document.querySelector("#detailsnumber").innerHTML = conversation.id;
             document.querySelector("#detailstotalmessage").innerHTML = "Total Messages: "+ conversation.messages.length;
+            document.querySelector("#talkingtoid").innerHTML = talkingToId;
+            document.querySelector("#talkingtoname").innerHTML = talkingToName || 'Unsaved'
             document.querySelector("#contactdetails").classList.add("active")
             document.querySelector("#overlay").classList.add("active")
             break;

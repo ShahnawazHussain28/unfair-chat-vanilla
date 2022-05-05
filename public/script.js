@@ -49,6 +49,24 @@ document.querySelector("#saveContact").addEventListener('submit', (e) => {
     e.preventDefault();
     saveContact();
 })
+document.querySelector("#namestatus").addEventListener('click', async () => {
+    if (!activeChatId) return
+    let dp = '', talkingToId = '', talkingToName;
+    const dpRes = await fetch("/getdp/" + activeChatId)
+    const dpData = await dpRes.json()
+    if(dpData && dpData.dp){
+        dp = dpData.dp
+        picElem.innerHTML = dp
+    }
+    const talkingToRes = await fetch("/getTalkingTo/" + activeChatId)
+    const talkingToData = await talkingToRes.json()
+    if(talkingToData && talkingToData.id) {
+        talkingToId = talkingToData.id
+        talkingToName = talkingToData.name
+    }
+    if(!talkingToId) talkingToName = 'Not Available'
+    displayDetailsModal(dp, talkingToId, talkingToName);
+})
 document.querySelectorAll(".emoji").forEach(emojiElem => {
     emojiElem.addEventListener('click', () => {
         setDP(emojiElem);
@@ -317,6 +335,7 @@ function changeChat(conversation) {
         if (conversation.id == activeChatId) {
             conversation.read = true;
             headerNumber.innerHTML = `Number: ${conversation.id}`;
+            talkingToEmit(activeChatId, conversation.name);
             bluetickEmit();
             break;
         }
@@ -399,10 +418,10 @@ function debounce(cb, delay = 1000){
 }
 
 window.onbeforeunload = () => {
-    setConversations(conversations)
+    if(activeChatId) setConversations(conversations)
 }
 document.getElementsByTagName("body")[0].onunload = () => {
-    setConversations(conversations)
+    if(activeChatId) setConversations(conversations)
 }
 
 function scrollToBottom(){

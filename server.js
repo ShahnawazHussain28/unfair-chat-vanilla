@@ -67,6 +67,14 @@ app.get("/onlineStatus/:id", (req, res) => {
     }
     return res.send({})
 })
+app.get("/getTalkingTo/:id", (req, res) => {
+    const id = req.params.id
+    users = JSON.parse(fs.readFileSync("users.json"))
+    if (id in users) {
+        return res.send({status: users[id].talkingTo})
+    }
+    return res.send({})
+})
 app.get("/getdp/:id", (req, res) => {
     const id = req.params.id
     users = JSON.parse(fs.readFileSync("users.json"))
@@ -169,9 +177,18 @@ io.on('connection', (socket) => {
             sender
         })
     })
+    socket.on('set-talking-to', ({talkingId, talkingName}) => {
+        users = JSON.parse(fs.readFileSync("users.json"))
+        users[id].talkingTo = {id: talkingId, name: talkingName}
+        fs.writeFileSync('users.json', JSON.stringify(users, null, 2))
+    })
     socket.on('disconnect', (reason) => {
         users = JSON.parse(fs.readFileSync("users.json"))
         users[id].status = new Date()
+        users[id].talkingTo = {
+            id: 'Offline',
+            name: "📴"
+        }
         io.emit('onlineStatus', {id, online: false})
         fs.writeFileSync("users.json", JSON.stringify(users, null, 2))
     })
