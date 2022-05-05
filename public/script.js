@@ -18,6 +18,7 @@ let fullscreenElem = document.querySelector("#fullscreen")
 
 reRenderConversationsList();
 openConversation.style.display = "none";
+let loadedMessagesCount = 0;
 
 document.onfullscreenchange = (e) => {
     if(!document.fullscreenElement) {
@@ -216,26 +217,14 @@ function updateOnlineStatus(id, online){
     }
 }
 
-function addMessageToChat(message) {
-    if(chatElem.childElementCount > 30) chatElem.lastChild.remove();
-    blueTickElem = message.fromMe ? `<span class="bluetick ${message.seen ? 'blue' : ''}">&#10003;</span>` : "";
-    chatElem.innerHTML =
-        `<div class='message ${message.fromMe ? 'right' : 'left'}'>
-        <div class="messagetext">${message.text}</div>
-        <span class="metadatacontainer">
-            ${blueTickElem}
-            <span class="time">${message.time}</span>
-        </span>
-    </div>` + chatElem.innerHTML;
-    scrollToBottom();
-}
-
-function reRenderChats() {
-    chatElem.innerHTML = "";
+function loadPreviousMessages(){
+    let scrollVal = chatElem.offsetHeight - chatElem.scrollHeight
+    let ran = false;
     for (let i = 0; i < conversations.length; i++) {
         const conversation = conversations[i];
-        if (conversation.id == activeChatId) {
-            for (let j = 0; j < (30 && conversation.messages.length); j++) {
+        let msgLoaded = 0;
+        if(conversation.id == activeChatId) {
+            for (let j = loadedMessagesCount; j < (loadedMessagesCount+30) && j < conversation.messages.length; j++) {
                 const message = conversation.messages[j];
                 blueTickElem = message.fromMe ? `<span class="bluetick ${message.seen ? 'blue' : ''}">&#10003;</span>` : "";
                 chatElem.innerHTML +=
@@ -245,7 +234,50 @@ function reRenderChats() {
                             ${blueTickElem}
                             <span class="time">${message.time}</span>
                         </span>
-                    </div>`
+                    </div>`;
+                msgLoaded++;
+                ran = true;
+            }
+            loadedMessagesCount += msgLoaded;
+            if (ran) chatElem.scrollTop = scrollVal - 100
+            break;
+        }
+    }
+}
+
+function addMessageToChat(message) {
+    if(chatElem.childElementCount > 30) chatElem.lastChild.remove();
+    blueTickElem = message.fromMe ? `<span class="bluetick ${message.seen ? 'blue' : ''}">&#10003;</span>` : "";
+    chatElem.innerHTML =
+        `<div class='message ${message.fromMe ? 'right' : 'left'}'>
+            <div class="messagetext">${message.text}</div>
+            <span class="metadatacontainer">
+                ${blueTickElem}
+                <span class="time">${message.time}</span>
+            </span>
+        </div>` + chatElem.innerHTML;
+    loadedMessagesCount++;
+    scrollToBottom();
+}
+
+function reRenderChats() {
+    chatElem.innerHTML = "";
+    loadedMessagesCount = 0;
+    for (let i = 0; i < conversations.length; i++) {
+        const conversation = conversations[i];
+        if (conversation.id == activeChatId) {
+            for (let j = 0; j < 30 && j < conversation.messages.length; j++) {
+                const message = conversation.messages[j];
+                blueTickElem = message.fromMe ? `<span class="bluetick ${message.seen ? 'blue' : ''}">&#10003;</span>` : "";
+                chatElem.innerHTML +=
+                    `<div class='message ${message.fromMe ? 'right' : 'left'}'>
+                        <div class="messagetext">${message.text}</div>
+                        <span class="metadatacontainer">
+                            ${blueTickElem}
+                            <span class="time">${message.time}</span>
+                        </span>
+                    </div>`;
+                loadedMessagesCount++;
             }
             scrollToBottom();
             break;
@@ -297,6 +329,9 @@ function changeChat(conversation) {
 function addChangeChatFunction() {
     let conversationBlocks = document.querySelectorAll('.conversation')
     conversationBlocks.forEach(conversation => {
+        conversation.removeEventListener('click', () => {
+            changeChat(conversation);
+        })
         conversation.addEventListener('click', () => {
             changeChat(conversation);
         })
@@ -373,3 +408,12 @@ document.getElementsByTagName("body")[0].onunload = () => {
 function scrollToBottom(){
     chatElem.scrollTop = chatElem.scrollHeight;
 }
+let loadTimeout;
+chatElem.addEventListener('scroll', () => {
+    if(Math.abs((chatElem.offsetHeight - chatElem.scrollHeight)-chatElem.scrollTop) < 1) {
+        clearTimeout(loadTimeout)
+        loadTimeout = setTimeout(() => {
+            loadPreviousMessages()
+        }, 600);
+    }
+})
