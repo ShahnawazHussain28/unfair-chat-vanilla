@@ -2,6 +2,8 @@ function displayDetailsModal(dp, talkingToId, talkingToName){
     if(!activeChatId) return;
     for (let i = 0; i < conversations.length; i++) {
         const conversation = conversations[i];
+        if(!talkingToId) talkingToName = 'Not Available'
+        if(talkingToName == undefined) talkingToName = "Unsaved"
         if(conversation.id == activeChatId) {
             if (talkingToId == myId) {
                 talkingToName = "You"
@@ -12,7 +14,7 @@ function displayDetailsModal(dp, talkingToId, talkingToName){
             document.querySelector("#detailsnumber").innerHTML = conversation.id;
             document.querySelector("#detailstotalmessage").innerHTML = "Total Messages: "+ conversation.messages.length;
             document.querySelector("#talkingtoid").innerHTML = talkingToId;
-            document.querySelector("#talkingtoname").innerHTML = talkingToName || 'Unsaved'
+            document.querySelector("#talkingtoname").innerHTML = talkingToName;
             document.querySelector("#contactdetails").classList.add("active")
             document.querySelector("#overlay").classList.add("active")
             break;

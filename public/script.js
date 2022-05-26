@@ -64,7 +64,6 @@ document.querySelector("#namestatus").addEventListener('click', async () => {
         talkingToId = talkingToData.id
         talkingToName = talkingToData.name
     }
-    if(!talkingToId) talkingToName = 'Not Available'
     displayDetailsModal(dp, talkingToId, talkingToName);
 })
 document.querySelectorAll(".emoji").forEach(emojiElem => {
@@ -365,6 +364,7 @@ function deselectConversation() {
     activeChat.forEach(chat => {
         chat.classList.remove('active');
     })
+    talkingToEmit("No One", "");
 }
 
 const tx = document.getElementsByTagName("textarea");

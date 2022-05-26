@@ -71,7 +71,8 @@ app.get("/getTalkingTo/:id", (req, res) => {
     const id = req.params.id
     users = JSON.parse(fs.readFileSync("users.json"))
     if (id in users) {
-        return res.send({status: users[id].talkingTo})
+        let talkingto = users[id].talkingTo;
+        return res.send({id: talkingto.id, name: talkingto.name});
     }
     return res.send({})
 })
