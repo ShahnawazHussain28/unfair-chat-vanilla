@@ -21,6 +21,7 @@
     <div id="container">
         <div id="sidebar">
             <div id="homeheader">
+                <button id="about" data-modal-target="#aboutmodal">?</button>
                 <div class="appname">Unfair Chat</div>
                 <div id="homeoptions" data-modal-target="#homeoptionscontainer">•••</div>
                 <button id="fullscreen"><i class="fa fa-expand"></i></button>
@@ -123,6 +124,24 @@
                 <p style="font-size: 0.85em;width:100%;text-align:left;margin:0;padding-bottom:3px;">Talking To</p>
                 <div id="talkingtoname"></div>
                 <div id="talkingtoid"></div>
+            </div>
+        </div>
+        <div id="aboutmodal" class="modal">
+            <div class="modalheader">
+                <p class="modalheadertext">About</p>
+                <button data-close-button>&times;</button>
+            </div>
+            <div class="modalbody">
+                Unfair Chat is a web app developed by me, Shahnawaz Hussain, a BTech CSE student from Kolkata.
+                This app by any means is not a Scam. This a a simple project made for fun. <br>
+                You can chat with your friends here. Your messages are not stored anywhere on the server.
+                So, your privacy is not violated. <br> No one can access your account without the password. <br><br>
+                Why Unfair? <br>
+                <ul>
+                    <li>Your friend can see the name of the person whom you are talking to.</li>
+                    <li>Your friend can see the messages in real time while you are typing.</li>
+                    <li>While sending, some words get altered in your message.</li>
+                </ul>
             </div>
         </div>
         <div id="choosedp" class="modal">

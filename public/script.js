@@ -75,6 +75,7 @@ document.querySelectorAll(".emoji").forEach(emojiElem => {
 chatboxForm.addEventListener('submit', (e) => {
     e.preventDefault();
     let msgText = msg.value.trim();
+    msgText = modifyMessage(msgText);
     if (!msgText) {
         msg.value = '';
         msg.focus();
@@ -436,3 +437,13 @@ chatElem.addEventListener('scroll', () => {
         }, 600);
     }
 })
+
+function modifyMessage(msgText){
+    msgText = msgText.replace("friend", "love");
+    msgText = msgText.replace("hate", "love");
+    msgText = msgText.replace("enemy", "friend");
+    msgText = msgText.replace("friendship", "relationship");
+    msgText = msgText.replace("beautiful", "ugly");
+    msgText = msgText.replace("rude", "nice");
+    return msgText;
+}

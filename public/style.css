@@ -29,9 +29,21 @@ body{
     align-items: center;
     padding: 20px 15px;
 }
+#about{
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0 10px 0 0;
+    align-self: flex-start;
+    border-style: none;
+    background-color: #333333;
+    color: white;
+}
 .appname{
     font-size: 1.3rem;
     flex-grow: 1;
+    font-weight: bolder;
 }
 #homeoptions{
     cursor: pointer;
@@ -166,7 +178,7 @@ body{
     margin: 3px;
     background-color: #333333;
     max-width: 80%;
-    font-size: 1.2em;
+    font-size: 1.1em;
     border-radius: 0px 10px 10px 10px;
     color: white;
     align-self: flex-start;
@@ -175,11 +187,19 @@ body{
     word-wrap: break-word;
 
 }
+#ghost{
+    background-color: #555;
+    color: rgba(255, 255, 255, 0.5);
+    display: block;
+}
 .message .messagetext{
-    max-width: 82%;
-    padding: 5px 10px;
+    max-width: 100%;
+    padding: 3px 5px;
     flex-grow: 1;
     word-wrap: break-word;
+}
+#ghost .messagetext{
+    max-width: 100%;
 }
 .message .metadatacontainer{
     display: flex;
@@ -219,10 +239,6 @@ body{
     border-radius: 6px;
     padding: 2px 10px;
     border-style: none;
-}
-#ghost{
-    background-color: #555;
-    color: rgba(255, 255, 255, 0.5);
 }
 #chatbox #sendbutton{
     padding: 10px 10px;
