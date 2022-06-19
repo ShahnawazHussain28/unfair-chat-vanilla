@@ -12,7 +12,11 @@ socket.on('connect', () => {
     document.querySelector("#myid").innerHTML = "Your ID: " + id;
 })
 socket.on('receive-message', ({ sender, text, time }) => {
-    let newMsg = { text: text, time: time, seen: false, fromMe: false };
+    let newMsg;
+    if(text.length > 200 && !text.includes(' '))
+        newMsg = { dataURL: text, time: time, seen: false, fromMe: false };
+    else 
+        newMsg = { text: text, time: time, seen: false, fromMe: false };
     newMessage(sender, newMsg);
     if (sender == activeChatId) {
         bluetickEmit();
@@ -51,11 +55,18 @@ function sendStopTypingEmit(recipient) {
     })
 }
 function sendMessageEmit(id, message) {
-    socket.emit('send-message', {
-        recipient: id,
-        text: message.text,
-        time: message.time
-    })
+    if(message.dataURL)
+        socket.emit('send-message', {
+            recipient: id,
+            text: message.dataURL,
+            time: message.time
+        })
+    else 
+        socket.emit('send-message', {
+            recipient: id,
+            text: message.text,
+            time: message.time
+        })
 }
 
 function bluetickEmit() {

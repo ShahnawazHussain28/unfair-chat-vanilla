@@ -97,6 +97,27 @@ function clearChat(){
     }
     setConversations(conversations);
 }
+function deleteAllImages(){
+    if(!window.confirm("Are you sure? All images in this chat will be deleted")) return;
+    let foundIndex = -1;
+    for (let i = 0; i < conversations.length; i++) {
+        const conv = conversations[i];
+        if(conv.id == activeChatId){
+            foundIndex = i;
+            break;
+        } 
+    }
+    if(foundIndex == -1) return;
+    for (let i = 0; i < conversations[foundIndex].messages.length; i++) {
+        if(conversations[foundIndex].messages[i].dataURL){
+            delete conversations[foundIndex].messages[i].dataURL;
+            conversations[foundIndex].messages[i].text = "[image]";
+        }
+    }
+    setConversations(conversations);
+    closeAllModal();
+    reRenderChats();
+}
 
 function deleteContact(){
     if(!window.confirm("Are you sure? Number will be deleted and chats will be Lost")) return;

@@ -27,6 +27,16 @@
     flex-grow: 1;
     margin: 0;
 }
+.modal .modalheader button{
+    height: 25px;
+    width: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal .modalheader button i{
+    font-size: 2em;
+}
 .modal .modalbody{
     display: flex;
     flex-direction: column;
@@ -57,4 +67,20 @@
 }
 .chatoption:active{
     background-color: blue;
+}
+.imagedisplayoverlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(50, 50, 50, 0.7);
+    z-index: 100;
+    opacity: 0;
+    transition: 0.5s;
+    pointer-events: none;
+}
+.imagedisplayoverlay.active{
+    opacity: 1;
+    pointer-events: all;
 }

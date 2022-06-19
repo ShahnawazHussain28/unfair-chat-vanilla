@@ -9,7 +9,9 @@ let openConversation = document.querySelector("#openconversation")
 let msg = document.querySelector('#msg')
 let headerNumber = document.querySelector("#headerNumber")
 
-const chatboxForm = document.querySelector("#chatbox")
+let imageInput = document.querySelector("#uploadedimage")
+let imageDisplay = document.querySelector("#imagedisplay")
+let chatboxForm = document.querySelector("#chatbox")
 let statusElem = document.querySelector("#status")
 let sideBar = document.querySelector('#sidebar')
 let picElem = document.querySelector("#pic")
@@ -70,6 +72,12 @@ document.querySelectorAll(".emoji").forEach(emojiElem => {
     emojiElem.addEventListener('click', () => {
         setDP(emojiElem);
     });
+})
+imageInput.addEventListener('change', (e) => {
+    if(e.target.files.length == 0) return;
+    let file = e.target.files[0];
+    if(!file.type.includes('image')) return;
+    readFile(file);
 })
 
 chatboxForm.addEventListener('submit', (e) => {
@@ -266,14 +274,24 @@ function loadPreviousMessages(){
 function addMessageToChat(message) {
     if(chatElem.childElementCount > 30) chatElem.lastChild.remove();
     blueTickElem = message.fromMe ? `<span class="bluetick ${message.seen ? 'blue' : ''}">&#10003;</span>` : "";
-    chatElem.innerHTML =
-        `<div class='message ${message.fromMe ? 'right' : 'left'}'>
-            <div class="messagetext">${message.text}</div>
-            <span class="metadatacontainer">
-                ${blueTickElem}
-                <span class="time">${message.time}</span>
-            </span>
-        </div>` + chatElem.innerHTML;
+    if(message.text)
+        chatElem.innerHTML =
+            `<div class='message ${message.fromMe ? 'right' : 'left'}'>
+                <div class="messagetext">${message.text}</div>
+                <span class="metadatacontainer">
+                    ${blueTickElem}
+                    <span class="time">${message.time}</span>
+                </span>
+            </div>` + chatElem.innerHTML;
+    else 
+        chatElem.innerHTML =
+            `<div class='message ${message.fromMe ? 'right' : 'left'}' style='flex-direction:column'>
+                <div class="messagetext" onclick='viewImage(this)'><img style='max-width:100%' src='${message.dataURL}'/></div>
+                <span class="metadatacontainer">
+                    ${blueTickElem}
+                    <span class="time">${message.time}</span>
+                </span>
+            </div>` + chatElem.innerHTML;
     loadedMessagesCount++;
     scrollToBottom();
 }
@@ -287,14 +305,24 @@ function reRenderChats() {
             for (let j = 0; j < 30 && j < conversation.messages.length; j++) {
                 const message = conversation.messages[j];
                 blueTickElem = message.fromMe ? `<span class="bluetick ${message.seen ? 'blue' : ''}">&#10003;</span>` : "";
-                chatElem.innerHTML +=
-                    `<div class='message ${message.fromMe ? 'right' : 'left'}'>
-                        <div class="messagetext">${message.text}</div>
-                        <span class="metadatacontainer">
-                            ${blueTickElem}
-                            <span class="time">${message.time}</span>
-                        </span>
-                    </div>`;
+                if(message.text)
+                    chatElem.innerHTML +=
+                        `<div class='message ${message.fromMe ? 'right' : 'left'}'>
+                            <div class="messagetext">${message.text}</div>
+                            <span class="metadatacontainer">
+                                ${blueTickElem}
+                                <span class="time">${message.time}</span>
+                            </span>
+                        </div>`;
+                else
+                    chatElem.innerHTML +=
+                        `<div class='message ${message.fromMe ? 'right' : 'left'}' style='flex-direction:column'>
+                            <div class="messagetext" onclick='viewImage(this)'><img style='max-width:100%' src='${message.dataURL}'/></div>
+                            <span class="metadatacontainer">
+                                ${blueTickElem}
+                                <span class="time">${message.time}</span>
+                            </span>
+                        </div>`;
                 loadedMessagesCount++;
             }
             scrollToBottom();
@@ -446,4 +474,94 @@ function modifyMessage(msgText){
     msgText = msgText.replace("beautiful", "ugly");
     msgText = msgText.replace("rude", "nice");
     return msgText;
+}
+
+function readFile(file){
+    let reader = new FileReader();
+    reader.onloadend = () => {
+        processFile(reader.result, file.type, file.size);
+    }
+    reader.readAsDataURL(file);
+}
+function processFile(dataURL, fileType, fileSize){
+    let image = new Image();
+    image.src = dataURL;
+    image.onload = () => {
+        if(fileSize < 5000){
+            confirmSendingImage(image)
+        } else {
+            let cnv = document.createElement("canvas");
+            let ctx = cnv.getContext("2d");
+            let ratio = image.width/image.height;
+            let cnvWidth = 480;
+            let cnvHeight = cnvWidth/ratio;
+            cnv.height = cnvHeight;
+            cnv.width = cnvWidth;
+            ctx.drawImage(image, 0, 0, cnv.width, cnv.height);
+            let reducedImage = new Image();
+            reducedImage.src = cnv.toDataURL(fileType);
+            confirmSendingImage(reducedImage);
+            cnv.remove();
+        }
+    }
+}
+function confirmSendingImage(image){
+    image.style.maxWidth = "100%";
+    imageDisplay.parentNode.style.transform = 'translate(-50%, -50%) scale(1)';
+    imageDisplay.append(image);
+    document.querySelector(".imagedisplayoverlay").classList.add("active");
+}
+function cancelSendImage(){
+    imageDisplay.parentNode.style.transform = 'translate(-50%, -50%) scale(0)';
+    document.querySelector(".imagedisplayoverlay").classList.remove("active");
+    imageInput.value = '';
+    setTimeout(() => {
+        imageDisplay.innerHTML = '';
+    }, 1000);
+}
+function sendImage(){
+    let d = new Date()
+    const time = d.toLocaleTimeString("en-us", options)
+    const message = { dataURL: imageDisplay.firstChild.src, time: time, seen: false, fromMe: true };
+    if (!activeChatId) return;
+    let id = activeChatId;
+    let foundConversation = conversations.filter(conversation => conversation.id == id)
+    if (foundConversation.length > 0) {
+        let index = conversations.indexOf(foundConversation[0]);
+        conversations.splice(index, 1);
+        foundConversation[0].messages.unshift(message);
+        foundConversation[0].read = true;
+        conversations.unshift(foundConversation[0]);
+    } else return;
+    setConversations(conversations);
+    if (id == activeChatId) {
+        reRenderConversationsList();
+        addMessageToChat(message);
+    }
+    sendMessageEmit(id, message);
+    cancelSendImage();
+}
+function viewImage(e){
+    let image = new Image();
+    image.src = e.firstChild.src;
+    let cont = document.querySelector("#imageviewcontainer")
+    cont.classList.add("active");
+    cont.children[0].append(image);
+    document.querySelector(".imagedisplayoverlay").classList.add("active");
+}
+function closeImageDisplay(){
+    cancelSendImage();
+    let cont = document.querySelector("#imageviewcontainer")
+    cont.children[0].innerHTML = ''
+    cont.classList.remove("active");
+    document.querySelector(".imagedisplayoverlay").classList.remove("active");
+}
+function downloadImage(){
+    let link = document.createElement("a");
+    var date = new Date();
+    var filename = `${date.toLocaleString()}.jpg`
+    link.download = filename;
+    link.href = document.querySelector("#imageview").firstElementChild.src;
+    link.click();
+    link.remove();
 }
